@@ -1,180 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Image,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import Registrar from './screen/Registrar';
-import DatosP from './screen/datosPersonales';
-import segDato from './screen/segundoDato';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { createStore, applyMiddleware } from "redux";
-import {Provider, useSelector, useDispatch} from 'react-redux';
-import ReduxThunk from "redux-thunk";
-import axios from 'axios';
-import { Alert } from 'react-native';
-import DrawerNavigation from './navigation/drawerNavigation'
+import { Provider, useDispatch, useSelector, useStore} from 'react-redux';
+import { createStore, combineReducers } from 'redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer, StackActions } from '@react-navigation/native';
+import { Alert, View, Image, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 
-const LOGIN_ATTEMPT = "LOGIN_ATTEPMT";
-const LOGIN_SUCCESS = "LOGIN_SUCCESS";
-const LOGIN_FAILURE = "LOGIN_FAILURE";
-const STATUS = {
-  ATTEMPT: 'ATTEMPT',
-  SUCCESS: 'SUCCESS',
-  FAILURE: 'FAILURE',
-  NONE: 'NONE'
-}
-
-const initialState = {
-  Loading: STATUS.NONE,
-  data: [],
-  error: {}
+const Stack = createStackNavigator();
+const initialState = {data:['Hello, my name is orlando. What’s is yours?', 'Hola, mi nombre es orlando. ¿Cuál es el tuyo?',
+'Pleased to meet you, Mary. My name’s orlando.', 'Encantado de conocerte, Mary. Mi nombre es Orlando.',
+'Nice to meet you. Where are you from?', 'Un placer conocerte. ¿De donde eres?',
+'I’m from Michigan. Detroit, specifically. And you? Where are you from?', 'Yo soy de Michigan. Detroit, específicamente. ¿Y usted? ¿De donde eres?',
+'I’m from Las Vegas.', 'Soy de Las Vegas. ',],
+count:0,
+usuarios:[[{email:'Chato',password:'2106'}],]
 };
+const ADD_USUARIO = "ADD_USUARIO";
+const AGREGAR = "AGREGAR";
 
-const Login = ( values, navigation ) => {
-  const {email, password} = values;
-  return dispatch => {
-    dispatch({type: LOGIN_ATTEMPT});
-
-      axios
-        .post('https://jsonplaceholder.typicode.com/users',
-        {
-          email,
-          password
-        })
-        .then(res => {
-          dispatch({type: LOGIN_SUCCESS});
-          Alert.alert('exito','As iniciado sección exitosamente')
-          navigation.navigate('Datos')
-        })
-        .catch(error => {
-          dispatch({type: LOGIN_FAILURE});
-          Alert.alert('error', error)
-        })
-  }
-
-}
+const generateDispatch = (type, payload) => {
+  return {
+    type: type,
+    payload: payload
+  };
+};
 
 const Reducer = (state = initialState, action) => {
   switch(action.type){
-    case LOGIN_ATTEMPT:
+    case AGREGAR:
+      return{
+        ...state,
+        data : [
+          ...state.data,
+          [].concat(action.payload[0]),
+          [].concat(action.payload[1])
+        ]
+      };
+    case ADD_USUARIO:
       return {
         ...state,
-        Loading: STATUS.ATTEMPT
+        usuarios: [
+          ...state.usuarios,
+          [].concat(action.payload)
+        ]
       };
-    case LOGIN_SUCCESS:
-      return {
-        ...state,
-        Loading: STATUS.SUCCESS
-      };
-    case LOGIN_FAILURE:
-      return {
-        ...state,
-        Loading: STATUS.FAILURE
-      };
-    default:
-      return state
-  }
-}
-
-const store = createStore(Reducer, applyMiddleware(ReduxThunk));
-
-const Stack = createStackNavigator();
-const App = () => {
-  /* const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
   
-  const apiFecht = () => {
-    useEffect(() => {
-      axios
-        .get('https://jsonplaceholder.typicode.com/users')
-        .then(Response =>
-          {
-            setUsers(Response.data)
-            setLoading(false)
-          })
-    },[])
+    default:
+      return state;
   }
+} 
 
-  apiFecht()
+const AppNavigator = ({navigation}) => {
+    useEffect(() => {
+      AsyncStorage.getItem('token')
+      .then(x => {
+        navigation.dispatch(
+          StackActions.replace(x ? 'Home': 'Login')
+        )
+      })
+    },[])
 
-  if(loading){
     return(
-      <View style={styles.container}>
-        <Text style={styles.texto}>
-          Cargando...
-        </Text>
+      <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
+        <Text style={{color:'blue', fontSize: 22}}> Cargando... </Text>
+        <ActivityIndicator size='large' color='red' />
       </View>
     );
-  } */
+}
+
+const App = () => {
   return (
-    <Provider store={store}>
+    <Provider store={createStore(Reducer)}>
       <NavigationContainer>
-        <DrawerNavigation/>
-        {/* <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen
-            name="Home"
-            component={Home}
-            options={{
-              headerStyle: {backgroundColor: 'orange'},
-              title: 'ingresar',
-              headerTintColor: '#eee',
-            }}
-          />
-          <Stack.Screen
-            name="Registrar"
-            component={Registrar}
-            options={{
-              headerStyle: {backgroundColor: 'orange'},
-              title: 'Registrate',
-              headerTintColor: '#eee',
-            }}
-          />
-          <Stack.Screen
-            name="Datos"
-            component={DatosP}
-            options={{
-              headerStyle: {backgroundColor: 'orange'},
-              title: 'Datos Personales',
-              headerTintColor: '#eee',
-            }}
-          />
-          <Stack.Screen
-            name="segDato"
-            component={segDato}
-            options={{
-              headerStyle: {backgroundColor: 'orange'},
-              title: 'Datos Personales',
-              headerTintColor: '#eee',
-            }}
-          />
-        </Stack.Navigator> */}
+        <Stack.Navigator initialRouteName="AppNavigator" headerMode='none'>
+          <Stack.Screen name='AppNavigator' component={AppNavigator}/>
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Registro" component={Registro} />
+          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="Repasar" component={Repasar} />
+          <Stack.Screen name="Agregar" component={Agregar} />
+        </Stack.Navigator>
       </NavigationContainer>
     </Provider>
+    
   );
 };
 
-const Home = ({navigation}) => {
-  const [cambio, setCambio] = useState(false);
+const Registro = ({navigation}) => {
   const store = useSelector(store => store);
   const dispatch = useDispatch();
   const formik = useFormik({
     initialValues:{
-      email: '',
+      usuario: '',
       password:'',
     },
     validationSchema: Yup.object({
-      email: Yup.string()
-      .email('email invalido')
+      usuario: Yup.string()
+      .min(5)
       .required('Requerido'),
 
       password: Yup.string()
@@ -182,233 +106,481 @@ const Home = ({navigation}) => {
       .required('Requerido'),
     }),
     onSubmit: values => {
-      dispatch(Login(values,navigation));
+  
+      const existeU = (usu,val) => {
+        return usu.some(x => val===x[0].email);
+      }
+      
+      if(existeU(store.usuarios,values.usuario)){
+        alert('el usuario ya existe ingrese otro nombre de usuario');
+        return;
+      }
+  
+      dispatch(generateDispatch(ADD_USUARIO,values));
+      alert('el usuario se a creado con exito');
+      navigation.navigate('Login');
     }
   })
   return (
-    <View style={{flex: 1}}>
-      <Text> </Text>
-      <Text> </Text>
-      <ScrollView style={{flex: 1}}>
-        <View style={styles.container}>
-          <View
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingBottom: 12,
-            }}>
-            <TextInput
-              autoCapitalize='none'
-              onBlur={formik.handleBlur('email')}
-              value={formik.values.email}
-              onChangeText={formik.handleChange('email')}
-              style={{
-                height: 40,
-                width: 250,
-                backgroundColor: '#ccc',
-                borderRadius: 10,
-              }}
-              placeholder='email'
+    <ScrollView>
+      <Text></Text>
+      <Text></Text>
+      <Text></Text>
+      <View style={styles.container}>
+        <View style={styles.center}>
+          <Text style={styles.titulo}>APRENDE INGLES</Text>
+          <Image style={styles.imagen} source={require('./component/images/ingles.png')} />
+        </View>
+        <Text></Text>
+        <View style={styles.segvista}>
+          <Text style={styles.subtitulos2}>
+            Registrar usuario
+          </Text>
+          <Text>
+          </Text>
+          <TextInput
+            autoCapitalize='none'
+            onBlur={formik.handleBlur('usuario')}
+            value={formik.values.usuario}
+            onChangeText={formik.handleChange('usuario')}
+            style={styles.textoinputs}
+            placeholder='Nombre de usuario'
             />
-              {formik.errors.email && formik.touched.email ? <Text>{formik.errors.email}</Text> : null}
-          </View>
-          <View style={{paddingBottom: 12}}>
-            <View
-              style={{
-                flexDirection: 'row',
-                backgroundColor: '#ccc',
-                borderRadius: 10,
-              }}>
-              <TextInput
-                autoCapitalize='none'
-                onBlur={formik.handleBlur('password')}
-                value={formik.values.password}
-                onChangeText={formik.handleChange('password')}
-                secureTextEntry={cambio}
-                keyboardType='default'
-                style={{
-                  height: 40,
-                  width: 220,
-                  backgroundColor: '#ccc',
-                  borderRadius: 10,
-                }}
-                placeholder='Contraseña'
-              />
-              <TouchableOpacity
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingEnd: 10,
-                }}
-                onPress={() => {
-                  setCambio(!cambio);
-                }}>
-                {cambio == true ? (
-                  <Icon name="eye-slash" size={20} color="#808080" />
-                ) : (
-                  <Icon name="eye" size={20} color="#808080" />
-                )}
-              </TouchableOpacity>
-            </View>
-              {formik.errors.password && formik.touched.password ? <Text style={{alignSelf:'center'}}>{formik.errors.password}</Text> : null}
-              {(store.Loading === STATUS.ATTEMPT) ? <ActivityIndicator size='small' color='orange' /> : null }
-          </View>
-          <View>
-            <TouchableOpacity
-              style={{
-                borderRadius: 10,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'orange',
-                height: 40,
-                width: 250,
+            {formik.errors.usuario && formik.touched.usuario ? <Text>{formik.errors.usuario}</Text> : null}
+          <Text style={styles.subtitulos}>
+          </Text>
+          <TextInput
+            autoCapitalize='none'
+            onBlur={formik.handleBlur('password')}
+            value={formik.values.password}
+            onChangeText={formik.handleChange('password')}
+            secureTextEntry={true}
+            keyboardType='numeric'
+            style={styles.textoinputs}
+            placeholder='Contraseña'
+            />
+            {formik.errors.password && formik.touched.password ? <Text>{formik.errors.password}</Text> : null}
+        </View>
+        <Text></Text>
+        <View style={{flexDirection:'row'}}>
+          <TouchableOpacity style={styles.btnNew} onPress={formik.handleSubmit}>
+            <Text style={styles.textonegro}>
+              registrar
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnNew} onPress={() => 
+              navigation.goBack()}>
+            <Text style={styles.textonegro}>
+              volver
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <View>
+          <Text style={styles.ultvista}>
+            derechos reservados
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
+const Login = ({navigation}) => {
+  const store = useSelector(store => store);
+  
+  const formik = useFormik({
+    initialValues:{
+      usuario: '',
+      password:'' ,
+    },
+    validationSchema: Yup.object({
+      usuario: Yup.string()
+      .min(5)
+      .required('Requerido'),
+
+      password: Yup.string()
+      .min(5)
+      .required('Requerido'),
+    }),
+    onSubmit: values => {
+  
+      const existeP = (usu,val) => {
+        return (usu.some(x => (val.email===x[0].email && val.password===x[0].password)));
+      }
+  
+      if(existeP(store.usuarios,values)){
+        AsyncStorage.setItem('token',values.password)
+        navigation.dispatch(
+          StackActions.replace('Home')
+        )
+        return;
+      };
+  
+      Alert.alert('Error','Usuario y/o contraseña incorecto');
+    }
+  })
+
+  return (
+    <ScrollView>
+      <Text></Text>
+      <Text></Text>
+      <Text></Text>
+      <View style={styles.container}>
+        <View style={styles.center}>
+          <Text style={styles.titulo}>APRENDE INGLES</Text>
+          <Image style={styles.imagen} source={require('./component/images/ingles.png')} />
+        </View>
+        <Text></Text>
+        <View style={styles.segvista}>
+          <Text style={styles.subtitulos2}>
+            Iniciar sección
+          </Text>
+          <TextInput
+            autoCapitalize='none'
+            onBlur={formik.handleBlur('usuario')}
+            value={formik.values.usuario}
+            onChangeText={formik.handleChange('usuario')}
+            style={styles.textoinputs}
+            placeholder='Usuario'
+            />
+            {formik.errors.usuario && formik.touched.usuario ? <Text>{formik.errors.usuario}</Text> : null}
+          <Text></Text>
+          <Text></Text>
+          <TextInput
+            autoCapitalize='none'
+            onBlur={formik.handleBlur('password')}
+            value={formik.values.password}
+            onChangeText={formik.handleChange('password')}
+            secureTextEntry={true}
+            keyboardType='numeric'
+            style={styles.textoinputs}
+            placeholder='Contraseña'
+            />
+            {formik.errors.password && formik.touched.password ? <Text>{formik.errors.password}</Text> : null}
+        </View>
+        <Text></Text>
+        <View style={{flexDirection:'row'}}>
+          <TouchableOpacity style={styles.btnNew} onPress={formik.handleSubmit}>
+            <Text style={styles.textonegro}>
+              ingresar
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnNew} onPress={() => 
+              navigation.navigate('Registro')}>
+            <Text style={styles.textonegro}>
+              registrarme
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <View>
+          <Text style={styles.ultvista}>
+            derechos reservados
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
+const Home = ({ navigation }) => {
+  const store = useSelector(store => store);
+
+  return (
+    
+      <View style={styles.container}>
+        <View style={styles.center}>
+          <Text style={styles.titulo}>APRENDE INGLES</Text>
+          <Image style={styles.imagen} source={require('./component/images/ingles.png')} />
+        </View>
+        <View style={styles.segvista}>
+          <Text style={styles.subtitulos}>
+            desea repasar ahora?
+          </Text>
+          <TouchableOpacity style={styles.btnReset} onPress={() => 
+            navigation.navigate('Repasar')}>
+            <Text style={styles.textonegro}>ir</Text>
+          </TouchableOpacity>
+          <Text style={styles.subtitulos}>
+            agregar nuevas frases?
+          </Text>
+          <TouchableOpacity style={styles.btnReset} onPress={() => { 
+            navigation.navigate('Agregar') }}>
+            <Text style={styles.textonegro}>ir</Text>
+          </TouchableOpacity>
+          <Text
+            style={{
+              paddingTop:30,
+              alignSelf:'flex-end',
+              fontSize:15,
+              color:'red'
               }}
-              onPress={formik.handleSubmit}>
-              <Text style={{color: '#eee'}}> ingresar </Text>
+              onPress={() => {
+                AsyncStorage.removeItem('token')
+                navigation.dispatch(
+                  StackActions.replace('Login', store)
+                )
+                
+              }
+              }>
+                cerrar sección
+          </Text>
+        </View>
+        <View>
+
+        </View>
+        <View>
+          <Text style={styles.ultvista}>
+            derechos reservados
+          </Text>
+        </View>
+      </View>
+    
+  );
+};
+
+const Agregar = ({ route, navigation }) => {
+  const store = useSelector(store => store);
+  const dispatch = useDispatch();
+  const longitud = store.data.length-1;
+  const [frase, setFrase] = useState([])
+  const [fras, setFras] = useState([])
+
+  return (
+    <ScrollView style={{backgroundColor: 'lightcyan'}}>
+      <View>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+      </View>
+      <View style={styles.centerBol}>
+        <View style={styles.center}>
+          <Image style={styles.imagen} source={require('./component/images/inglaterra.png')} />
+          <Text style={styles.textotitulo}>
+            ingrese la frase:
+          </Text>
+          <TextInput onChangeText={r => setFrase(r)} style={styles.textoinputs} placeholder='frase (EN INGLES)' ></TextInput>
+          <TextInput onChangeText={t => setFras(t)} style={styles.textoinputs} placeholder='ingrese la traduccion' ></TextInput>
+          <View style={styles.direccion}>
+            <TouchableOpacity  style={styles.btnNew} onPress={() => {
+              if (frase.length === 0) {
+                alert('Campo Obligatorio ingrese la frase')
+                return;
+              }
+              if (fras.length === 0) {
+                alert('Campo Obligatorio ingrese la traducción')
+                return;
+              }
+              if(store.data[longitud] == fras){
+                alert('la frase y/o traducción se repite, ingrese una diferente')
+                return;
+              }
+              if(store.data[longitud-1] == frase){
+                alert('la frase y/o traducción se repite, ingrese una diferente')
+                return;
+              }
+              dispatch(generateDispatch(AGREGAR,[frase,fras]))
+              alert('texto enviado con exito')
+              navigation.navigate('Home') 
+              }}>
+              <Text style={styles.textonegro}> enviar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.btnNew} onPress={
+              () => navigation.navigate('Home')
+              }>
+              <Text style={styles.textonegro}>volver</Text>
             </TouchableOpacity>
           </View>
         </View>
-        <Text> </Text>
-        <Text> </Text>
-        <View style={styles.container}>
-          <View style={{flex: 1.2}}>
-            <View style={{paddingBottom: 12}}>
-              <TouchableOpacity
-                style={{
-                  borderRadius: 10,
-                  alignItems: 'stretch',
-                  justifyContent: 'center',
-                  backgroundColor: '#ccc',
-                  height: 40,
-                  width: 250,
-                }}>
-                <View
-                  style={{flex: 1, justifyContent: 'center'}}
-                  flexDirection="row">
-                  <View
-                    style={{
-                      flex: 0.2,
-                      justifyContent: 'center',
-                      paddingLeft: 10,
-                    }}>
-                    <Image
-                      source={require('./component/images/google.png')}
-                      style={{width: 20, height: 20}}
-                    />
-                  </View>
-                  <View style={{flex: 0.8, justifyContent: 'center'}}>
-                    <Text>Inicia Secion Con Google</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-            <View style={{paddingBottom: 12}}>
-              <TouchableOpacity
-                style={{
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#0000f8',
-                  height: 40,
-                  width: 250,
-                }}>
-                <View
-                  style={{flex: 1, justifyContent: 'center'}}
-                  flexDirection="row">
-                  <View
-                    style={{
-                      flex: 0.2,
-                      justifyContent: 'center',
-                      paddingLeft: 10,
-                    }}>
-                    <Image
-                      source={require('./component/images/facebook.png')}
-                      style={{width: 20, height: 20}}
-                    />
-                  </View>
-                  <View style={{flex: 0.8, justifyContent: 'center'}}>
-                    <Text style={{color: 'white'}}>
-                      Inicia Secion Con Facebook
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-            <View style={{}}>
-              <TouchableOpacity
-                style={{
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#ccc',
-                  height: 40,
-                  width: 250,
-                }}>
-                <View
-                  style={{flex: 1, justifyContent: 'center'}}
-                  flexDirection="row">
-                  <View
-                    style={{
-                      flex: 0.2,
-                      justifyContent: 'center',
-                      paddingLeft: 12,
-                    }}>
-                    <Image
-                      source={require('./component/images/Apple.png')}
-                      style={{width: 16, height: 20}}
-                    />
-                  </View>
-                  <View style={{flex: 0.8, justifyContent: 'center'}}>
-                    <Text style={{color: 'black'}}>
-                      Inicia Secion Con Cuenta Apple
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View
-            style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-            <View style={{flexDirection: 'row'}}>
-              <Text style={{color: 'black'}}>¿No Tenes Cuenta?</Text>
-              <Text
-                style={{
-                  color: 'black',
-                  borderBottomWidth: 1,
-                  borderBottomColor: 'black',
-                }}
-                onPress={() => navigation.navigate('Registrar')}>
-                Registrate Aqui
+      </View>
+    </ScrollView>
+  );
+};
+
+const Repasar = ({ route, navigation }) => {
+  const store = useSelector(store => store);
+  const [newCount, setNewCount] = useState(0);
+
+  return (
+    <ScrollView style={{backgroundColor: 'lightcyan'}}>
+      <View>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+        <Text></Text>
+      </View>
+      <View style={styles.container}>
+          <View style={styles.centerBol}>
+            <View style={styles.center}>
+              <Image style={styles.imagen} source={require('./component/images/cerebro.jpeg')} />
+              <Text style={styles.textotitulo}>
+                aqui podra ver la frase:
+            </Text>
+              <Text style={styles.textolist}>
+                {store.data[newCount]}
+              </Text>
+              <Text style={styles.textotitulo}>
+                y la traduccion:
+            </Text>
+              <Text style={styles.textolist}>
+                {store.data[newCount+1]}
               </Text>
             </View>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                paddingHorizontal: 30,
-              }}>
-              <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                <Text style={{color: '#808080'}}>
-                  Al Continuar Aceptas las Condiciones de
-                </Text>
-                <Text style={{color: '#808080'}}>
-                  Servicio y Polticas de Privacidad
-                </Text>
+            <View style={styles.center}>
+              <View style={styles.centerNew}>
+                <View>
+                  <Text></Text>
+                  <Text></Text>
+                  <Text></Text>
+                </View>
+                <TouchableOpacity style={styles.btnNew} onPress={() => { 
+                  setNewCount(newCount + 2); 
+                  if (newCount + 2 >= store.data.length) {
+                    return (alert('se acabaron las frases, por favor ingrese nuevas'));
+                  }
+                  }}>
+                  <Text style={styles.textonegro}>ver seguiente frase?</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.btnNew} onPress={() => {
+                  if(newCount==0){
+                    return alert('estas en el inicio')
+                  }
+                  setNewCount(0);
+                  alert('volviste a empezar')
+                  }}>
+                  <Text style={styles.textonegro}>volver a empezar</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.centerNo}>
+                <TouchableOpacity style={styles.btnNew} onPress={() => navigation.navigate('Home')}>
+                  <Text style={styles.textonegro}>volver</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
         </View>
       </ScrollView>
-    </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: 'aliceblue',
+  },
+  subtitulos2:{
+    textAlign:'center',
+    fontSize: 25,
+    color: 'blue'
+  },
+  ultvista: {
+    fontSize: 10,
+    color: 'black',
+    borderBottomColor: 'black',
+    borderBottomWidth: 1,
+  },
+  segvista: {
+    flex: 2,
+    marginBottom: 10,
+  },
+  subtitulos: {
+    fontSize: 20,
+    color: 'blue',
+  },
+  titulo: {
+    color: 'red',
+    fontSize: 25,
+  },
+  textonegro: {
+    color: 'white',
+  },
+  textoinputs: {
+    borderBottomColor: 'black',
+    borderBottomWidth: 1,
+  },
+  textotitulo: {
+    fontSize: 20,
+  },
+  direccion: {
+    flexDirection: 'row',
+  },
+  textolist: {
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    fontSize: 20,
+    fontStyle: 'italic',
+    color: 'blue',
+  },
+  imagen: {
+    width: 70,
+    height: 70,
+  },
+  btnN: {
+    borderRadius: 10,
+    height: 50,
+    width: 50,
+    backgroundColor: 'aqua',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  btnNew: {
+    borderRadius: 30,
+    height: 50,
+    width: 120,
+    backgroundColor: 'aqua',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  centerNew: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
   },
+  centerNo: {
+    flex: 2,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centerBol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'lightcyan',
+  },
+  centerCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'lavender'
+  },
+  btnReset: {
+    borderRadius: 30,
+    height: 50,
+    backgroundColor: 'aqua',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
+
 
 export default App;
