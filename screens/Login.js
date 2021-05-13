@@ -7,8 +7,9 @@ import { StackActions } from '@react-navigation/native'
 import { Alert, View, Image, Text, TextInput, TouchableOpacity, ScrollView, Button} from 'react-native'
 import styles from '../component/Styles'
 
-const Login = ({navigation}) => {
+const Login = ({props, navigation}) => {
     const store = useSelector(store => store);
+    /* const { navigation } = props; */
     /* const formik = useFormik({
       initialValues:{
         usuario: '',
@@ -51,7 +52,7 @@ const Login = ({navigation}) => {
             <Text style={styles.titulo}>APRENDE INGLES</Text>
             <Image style={styles.imagen} source={require('../component/images/ingles.png')} />
           </View>
-          <Text></Text>
+          <Text style={styles.subtitulos2}>INICIAR SECCIÓN</Text>
           <Formik
             initialValues={{usuario:'', password:''}}
             validationSchema = {Yup.object({
@@ -164,6 +165,6 @@ const Login = ({navigation}) => {
         </View>
       </ScrollView>
     );
-  };
+};
 
-  export default Login;
+export default Login;

@@ -5,7 +5,8 @@ import { StackActions } from '@react-navigation/native'
 import { View, Image, Text, TextInput, TouchableOpacity } from 'react-native'
 import styles from '../component/Styles'
 
-const Home = ({ navigation }) => {
+const Home = ({ props,navigation }) => {
+    /* const {navigation} = props; */
     const store = useSelector(store => store);
   
     return (
@@ -59,6 +60,6 @@ const Home = ({ navigation }) => {
         </View>
       
     );
-  };
+};
 
-  export default Home;
+export default Home;

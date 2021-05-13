@@ -3,7 +3,8 @@ import { useSelector} from 'react-redux'
 import { View, Image, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native'
 import styles from '../component/Styles'
 
-const Repasar = ({ navigation }) => {
+const Repasar = ({ props, navigation }) => {
+    /* const { navigation } = props; */
     const store = useSelector(store => store);
     const [newCount, setNewCount] = useState(0);
   
@@ -67,6 +68,6 @@ const Repasar = ({ navigation }) => {
           </View>
         </ScrollView>
     );
-  };
+};
 
-  export default Repasar;
+export default Repasar;

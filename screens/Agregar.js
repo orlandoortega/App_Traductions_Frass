@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { View, Image, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native'
 import styles from '../component/Styles'
-import generateDispatch from '../redux/Config'
+import { AGREGAR } from '../store/Types'
+import generateDispatch from '../store/Config'
 
-const Agregar = ({ props , navigation }) => {
+const Agregar = ({ props, navigation }) => {
+    /* const { navigation } = props; */
     const store = useSelector(store => store);
     const dispatch = useDispatch();
     const longitud = store.data.length-1;
@@ -46,7 +48,7 @@ const Agregar = ({ props , navigation }) => {
                   alert('la frase y/o traducción se repite, ingrese una diferente')
                   return;
                 }
-                dispatch(generateDispatch(AGREGAR,[frase,fras]))
+                dispatch({ type: AGREGAR, payload: [frase,fras]})
                 alert('texto enviado con exito')
                 navigation.navigate('Home') 
                 }}>
@@ -62,6 +64,5 @@ const Agregar = ({ props , navigation }) => {
         </View>
       </ScrollView>
     );
-  };
-
-  export default Agregar;
+};
+export default Agregar;

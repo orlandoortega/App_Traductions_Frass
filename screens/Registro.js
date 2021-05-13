@@ -4,10 +4,11 @@ import * as Yup from 'yup'
 import { useDispatch, useSelector } from 'react-redux'
 import { View, Image, Text, TextInput, TouchableOpacity, ScrollView, Button } from 'react-native'
 import styles from '../component/Styles'
-import {ADD_USUARIO} from '../redux/Types'
+import {ADD_USUARIO} from '../store/Types'
 
 
-const Registro = ({navigation}) => {
+const Registro = ({props, navigation}) => {
+  /* const { navigation } = props; */
   const store = useSelector(store => store);
   const dispatch = useDispatch();
   
@@ -21,7 +22,7 @@ const Registro = ({navigation}) => {
           <Text style={styles.titulo}>APRENDE INGLES</Text>
           <Image style={styles.imagen} source={require('../component/images/ingles.png')} />
         </View>
-        <Text></Text>
+        <Text style={styles.subtitulos2}>REGISTRO</Text>
         <Formik
           initialValues={{usuario:'', password:''}}
           validationSchema = {Yup.object({
